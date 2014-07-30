@@ -1,6 +1,6 @@
 /**
  * @file: 	main.c
- * @brief:	IR test
+ * @brief:	DS18B20 test
  * @date: 	9 kwi 2014
  * @author: Michal Ksiezopolski
  *
