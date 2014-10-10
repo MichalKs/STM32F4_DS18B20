@@ -95,6 +95,10 @@ int main(void) {
  */
 void softTimerCallback(void) {
 
+//  uint32_t count = TIMER14_GetCount();
+//
+//  println("Timer14: %u", count);
+
   LED_Toggle(LED0); // Toggle LED
   //printf("Test string sent from STM32F4!!!\r\n"); // Print test string
 

@@ -1,7 +1,7 @@
 /**
- * @file: 	ir.h
- * @brief:	Infrared decoding functions
- * @date: 	27 lip 2014
+ * @file: 	timer14.h
+ * @brief:	   
+ * @date: 	10 paź 2014
  * @author: Michal Ksiezopolski
  * 
  * @verbatim
@@ -15,23 +15,10 @@
  * @endverbatim
  */
 
-#ifndef IR_H_
-#define IR_H_
+#ifndef TIMER14_H_
+#define TIMER14_H_
 
-/**
- * @defgroup  IR IR
- * @brief     Infrared decoding functions
- */
+void TIMER14_Init(void);
+uint32_t TIMER14_GetTime(void);
 
-/**
- * @addtogroup IR
- * @{
- */
-
-void IR_Init(void);
-
-/**
- * @}
- */
-
-#endif /* IR_H_ */
+#endif /* TIMER14_H_ */

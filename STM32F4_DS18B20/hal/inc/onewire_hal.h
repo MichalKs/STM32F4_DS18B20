@@ -1,5 +1,5 @@
 /**
- * @file: 	hmc5883l_hal.h
+ * @file: 	onewire_hal.h
  * @brief:	   
  * @date: 	9 paź 2014
  * @author: Michal Ksiezopolski
@@ -15,11 +15,12 @@
  * @endverbatim
  */
 
-#ifndef HMC5883L_HAL_H_
-#define HMC5883L_HAL_H_
+#ifndef ONEWIRE_HAL_H_
+#define ONEWIRE_HAL_H_
 
-void HMC5883L_HAL_Init(void);
-uint8_t HMC5883L_HAL_Read(uint8_t address);
-void HMC5883L_HAL_Write(uint8_t address, uint8_t data);
 
-#endif /* HMC5883L_HAL_H_ */
+void ONEWIRE_HAL_ReleaseBus(void);
+void ONEWIRE_HAL_BusLow(void);
+void ONEWIRE_HAL_Init(void);
+
+#endif /* ONEWIRE_HAL_H_ */
