@@ -50,7 +50,7 @@ static uint16_t deviceCounter; ///< Number of found devices on the bus.
 
 
 /**
- * @brief Initialize onewire bus.
+ * @brief Initialize ONEWIRE bus.
  */
 void ONEWIRE_Init(void) {
 
@@ -82,7 +82,10 @@ void ONEWIRE_ResetBus(void) {
   }
 
 }
-
+/**
+ * @brief Writes a bit
+ * @param bit Bit
+ */
 void ONEWIRE_WriteBit(uint8_t bit) {
   ONEWIRE_HAL_BusLow(); // pull bus low for 1us
   TIMER_DelayUS(1);
@@ -91,10 +94,14 @@ void ONEWIRE_WriteBit(uint8_t bit) {
   if (bit & 0x01) {
     ONEWIRE_HAL_ReleaseBus();
   }
-  TIMER_DelayUS(60); // we waited 1us earlier, but interframe gap is also 1us, so wait 60us
+  TIMER_DelayUS(60);
   ONEWIRE_HAL_ReleaseBus(); // this is necessary for 0 bit
+  TIMER_DelayUS(1); // this delay is crucial - doesn't work without it
 }
-
+/**
+ * @brief Writes a byte
+ * @param data Byte
+ */
 void ONEWIRE_WriteByte(uint8_t data) {
 
   // data on ONEWIRE is sent LSB first
@@ -105,28 +112,34 @@ void ONEWIRE_WriteByte(uint8_t data) {
   }
 
 }
-
+/**
+ * @brief Reads a bit
+ * @return Read bit
+ */
 uint8_t ONEWIRE_ReadBit(void) {
 
   ONEWIRE_HAL_BusLow(); // pull bus low for 1us
   TIMER_DelayUS(1);
 
   ONEWIRE_HAL_ReleaseBus();
-  TIMER_DelayUS(10); // delay for device to respond - must be under 15us from initial falling edge
+  TIMER_DelayUS(15); // delay for device to respond - must be under 15us from initial falling edge
 
   uint8_t ret = ONEWIRE_HAL_ReadBus();
 
-  TIMER_DelayUS(50); // whole read slot should be 60us + 1us of gap
+  TIMER_DelayUS(45); // whole read slot should be 60us + 1us of gap
 
   return ret;
 }
-
+/**
+ * @brief Reads a byte
+ * @return Read byte
+ */
 uint8_t ONEWIRE_ReadByte(void) {
 
   uint8_t ret = 0;
 
   for (uint8_t i = 0; i < 8; i++) {
-    ret |= ONEWIRE_ReadBit() << i;
+    ret |= (ONEWIRE_ReadBit() << i);
   }
 
   return ret;

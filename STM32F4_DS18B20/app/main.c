@@ -69,6 +69,37 @@ int main(void) {
 
   ONEWIRE_Init();
   ONEWIRE_ResetBus();
+  ONEWIRE_WriteByte(0x33); // read ROM
+  uint8_t rom[8];
+
+  for (int i = 0; i < 8; i++) {
+    rom[i] = ONEWIRE_ReadByte();
+    printf("0x%02x ", rom[i]);
+  }
+  printf("\r\n");
+
+  TIMER_DelayUS(1000);
+  ONEWIRE_ResetBus();
+  ONEWIRE_WriteByte(0x55); // match ROM
+  for (int i = 0; i < 8; i++) {
+    ONEWIRE_WriteByte(rom[i]);
+  }
+  ONEWIRE_WriteByte(0x44); // convert temp
+
+  TIMER_Delay(1000); // wait 1s for temperature
+  ONEWIRE_ResetBus();
+  ONEWIRE_WriteByte(0x55); // match ROM
+  for (int i = 0; i < 8; i++) {
+    ONEWIRE_WriteByte(rom[i]);
+  }
+  ONEWIRE_WriteByte(0xbe); // read scratchpad
+
+  uint8_t result[10];
+  for (int i = 0; i < 9; i++) {
+    result[i] = ONEWIRE_ReadByte();
+    printf("0x%02x ", result[i]);
+  }
+  printf("\r\n");
 
 	while (1) {
 
