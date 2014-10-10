@@ -24,6 +24,7 @@
 #include <led.h>
 #include <comm.h>
 #include <keys.h>
+#include <onewire.h>
 
 #define SYSTICK_FREQ 1000 ///< Frequency of the SysTick set at 1kHz.
 #define COMM_BAUD_RATE 115200UL ///< Baud rate for communication with PC
@@ -65,6 +66,9 @@ int main(void) {
   uint8_t len;
 
   uint32_t softTimer = TIMER_GetTime(); // get start time for delay
+
+  ONEWIRE_Init();
+  ONEWIRE_ResetBus();
 
 	while (1) {
 

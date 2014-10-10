@@ -18,9 +18,11 @@
 #ifndef ONEWIRE_HAL_H_
 #define ONEWIRE_HAL_H_
 
+#include <inttypes.h>
 
 void ONEWIRE_HAL_ReleaseBus(void);
 void ONEWIRE_HAL_BusLow(void);
+uint8_t ONEWIRE_HAL_ReadBus(void);
 void ONEWIRE_HAL_Init(void);
 
 #endif /* ONEWIRE_HAL_H_ */

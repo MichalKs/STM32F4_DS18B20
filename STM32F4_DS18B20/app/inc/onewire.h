@@ -18,6 +18,7 @@
 #ifndef ONEWIRE_C_
 #define ONEWIRE_C_
 
-
+void ONEWIRE_ResetBus(void);
+void ONEWIRE_Init(void);
 
 #endif /* ONEWIRE_C_ */

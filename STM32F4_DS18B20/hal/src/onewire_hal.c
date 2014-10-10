@@ -40,7 +40,6 @@ void ONEWIRE_HAL_Init(void) {
   ONEWIRE_HAL_ReleaseBus();
   GPIO_Init(ONEWIRE_PORT, &GPIO_InitStructure);
 
-
 }
 
 
@@ -51,4 +50,8 @@ void ONEWIRE_HAL_ReleaseBus(void) {
 
 void ONEWIRE_HAL_BusLow(void) {
   GPIO_ResetBits(ONEWIRE_PORT, ONEWIRE_PIN);
+}
+
+uint8_t ONEWIRE_HAL_ReadBus(void) {
+  return GPIO_ReadInputDataBit(ONEWIRE_PORT, ONEWIRE_PIN);
 }
