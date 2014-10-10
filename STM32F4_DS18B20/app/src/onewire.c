@@ -19,7 +19,6 @@
  * @endverbatim
  */
 
-#include <stm32f4xx.h>
 #include <onewire.h>
 #include <onewire_hal.h>
 #include <timers.h>
@@ -29,7 +28,7 @@
 #define DEBUG
 
 #ifdef DEBUG
-#define print(str, args...) printf("1WIRE--> "str"%s",##args,"\r")
+#define print(str, args...) printf("1WIRE--> "str"%s",##args,"")
 #define println(str, args...) printf("1WIRE--> "str"%s",##args,"\r\n")
 #else
 #define print(str, args...) (void)0
@@ -78,14 +77,15 @@ uint8_t ONEWIRE_ResetBus(void) {
   TIMER_DelayUS(420); // minimum 480us (after realase time) - 60us
 
   if (ret) {
-    println("No devices");
+//    println("No devices");
   } else {
-    println("Devices present on bus");
+//    println("Devices present on bus");
   }
 
   return ret;
 
 }
+
 /**
  * @brief Writes a bit
  * @param bit Bit
@@ -102,6 +102,7 @@ void ONEWIRE_WriteBit(uint8_t bit) {
   ONEWIRE_HAL_ReleaseBus(); // this is necessary for 0 bit
   TIMER_DelayUS(1); // this delay is crucial - doesn't work without it
 }
+
 /**
  * @brief Writes a byte
  * @param data Byte
@@ -116,6 +117,7 @@ void ONEWIRE_WriteByte(uint8_t data) {
   }
 
 }
+
 /**
  * @brief Reads a bit
  * @return Read bit
@@ -134,6 +136,7 @@ uint8_t ONEWIRE_ReadBit(void) {
 
   return ret;
 }
+
 /**
  * @brief Reads a byte
  * @return Read byte
@@ -156,7 +159,12 @@ uint8_t ONEWIRE_ReadByte(void) {
  * on the bus. Data collision will occur if there are more than
  * one device.
  *
+ * @details First byte is device family code (0x28 for DS18B20).
+ * Last byte is CRC
+ *
  * @param buf Buffer for storing ROM code
+ *
+ * TODO Add CRC calculation
  */
 uint8_t ONEWIRE_ReadROM(uint8_t* buf) {
 
@@ -170,13 +178,14 @@ uint8_t ONEWIRE_ReadROM(uint8_t* buf) {
 
   for (int i = 0; i < 8; i++) {
     buf[i] = ONEWIRE_ReadByte();
-    print("0x%02x ", buf[i]);
+    printf("0x%02x ", buf[i]);
   }
-  println("\r\n");
+  printf("\r\n");
 
   return 0;
 
 }
+
 /**
  * @brief Send match ROM command
  * @param rom ROM code
@@ -190,5 +199,4 @@ void ONEWIRE_MatchROM(uint8_t* rom) {
   }
 
 }
-
 

@@ -1,9 +1,15 @@
 /**
  * @file: 	ds18b20.c
- * @brief:	   
+ * @brief:	DS18B20 digital thermometer library
  * @date: 	5 sie 2014
  * @author: Michal Ksiezopolski
  * 
+ * @details The DS18B20 is assumed to be in non-parasite mode
+ * (TODO Check if parasite mode also works with library).
+ * The DS18B20 data line should be pulled up with a 4k7 resistor.
+ *
+ * TODO Add power supply read, recall EEPROM, use of multiple DS18B20.
+ *
  * @verbatim
  * Copyright (c) 2014 Michal Ksiezopolski.
  * All rights reserved. This program and the 
@@ -50,10 +56,10 @@ typedef struct {
   uint8_t crc;
 } __attribute((packed)) DS18B20_Memory;
 
-#define DS18B20_RESOLUTION9   (0<<5)
-#define DS18B20_RESOLUTION10  (1<<5)
-#define DS18B20_RESOLUTION11  (2<<5)
-#define DS18B20_RESOLUTION12  (3<<5)
+#define DS18B20_RESOLUTION9   (0<<5) ///< 9  bit resolution
+#define DS18B20_RESOLUTION10  (1<<5) ///< 10 bit resolution
+#define DS18B20_RESOLUTION11  (2<<5) ///< 11 bit resolution
+#define DS18B20_RESOLUTION12  (3<<5) ///< 12 bit resolution (default)
 
 static uint8_t romCode[8];
 
@@ -85,50 +91,74 @@ void DS18B20_ConversionStart(void) {
 
 }
 
-double DS18B20_ReadTemp(void) {
+void DS18B20_WriteScratchPad(uint8_t th, uint8_t tl, uint8_t conf) {
+
+  ONEWIRE_MatchROM(romCode);
+  ONEWIRE_WriteByte(DS18B20_CMD_WRITE_SCRATCHPAD);
+
+  ONEWIRE_WriteByte(th); // high alarm temperature
+  ONEWIRE_WriteByte(tl); // low  alarm temperature
+
+  conf |= 0x1f; // 5 LSB bits always 1
+  conf &= ~(1<<7); // MSB always 0
+  ONEWIRE_WriteByte(conf);
+
+}
+
+void DS18B20_CopyScratchPad(void) {
+
+  ONEWIRE_MatchROM(romCode);
+  ONEWIRE_WriteByte(DS18B20_CMD_COPY_SCRATCHPAD);
+
+}
+
+void DS18B20_ReadScratchPad(uint8_t* buf) {
 
   ONEWIRE_MatchROM(romCode);
 
   ONEWIRE_WriteByte(DS18B20_CMD_READ_SCRATCHPAD); // read scratchpad
 
-  uint8_t result[10];
   for (int i = 0; i < 9; i++) {
-    result[i] = ONEWIRE_ReadByte();
-    printf("0x%02x ", result[i]);
+    buf[i] = ONEWIRE_ReadByte();
   }
-  printf("\r\n");
 
-  uint8_t t1 = (result[0]>>4) & 0x0f;
+}
+/**
+ * @brief
+ *
+ * @return
+ */
+double DS18B20_ReadTemp(void) {
 
-//  println("t1 = %u", t1);
+  uint8_t mem[10];
 
-  t1 |= ((result[1]<<4) & 0x70);
+  DS18B20_ReadScratchPad(mem);
 
-//  println("t1 = %u", t1);
+  DS18B20_Memory* dsMem = (DS18B20_Memory*)mem;
+
+  uint8_t t1 = (dsMem->tempLSB >> 4) & 0x0f;
+
+  t1 |= ((dsMem->tempMSB << 4) & 0x70);
 
   double t2 = 0;
 
-  if (result[0] & 0x08) {
+  if (dsMem->tempLSB & 0x08) {
     t2 += 0.5;
   }
 
-  if (result[0] & 0x04) {
+  if (dsMem->tempLSB & 0x04) {
     t2 += 0.25;
   }
 
-  if (result[0] & 0x02) {
+  if (dsMem->tempLSB & 0x02) {
     t2 += 0.125;
   }
 
-  if (result[0] & 0x01) {
+  if (dsMem->tempLSB & 0x01) {
     t2 += 0.0625;
   }
 
-//  println("t2 = %f", t2);
-
   double ret = (double)t1 + t2;
-
-//  println("ret = %f", ret);
 
   return ret;
 

@@ -20,8 +20,8 @@
 
 #include <inttypes.h>
 
-double DS18B20_ReadTemp(void);
-uint8_t DS18B20_Init(void);
-void DS18B20_ConversionStart(void);
+double  DS18B20_ReadTemp        (void);
+uint8_t DS18B20_Init            (void);
+void    DS18B20_ConversionStart (void);
 
 #endif /* DS18B20_H_ */

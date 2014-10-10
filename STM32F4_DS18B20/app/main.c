@@ -35,7 +35,7 @@ void softTimerCallback(void);
 #define DEBUG
 
 #ifdef DEBUG
-#define print(str, args...) printf("MAIN--> "str"%s",##args,"\r")
+#define print(str, args...) printf(""str"%s",##args,"")
 #define println(str, args...) printf("MAIN--> "str"%s",##args,"\r\n")
 #else
 #define print(str, args...) (void)0
@@ -45,14 +45,14 @@ void softTimerCallback(void);
 
 int main(void) {
 	
-  COMM_Init(COMM_BAUD_RATE);
+  COMM_Init(COMM_BAUD_RATE); // initialize communication with PC
   println("Starting program"); // Print a string to terminal
 
 	TIMER_Init(SYSTICK_FREQ); // Initialize timer
 
 	// Add a soft timer with callback running every 1000ms
 	int8_t timerID = TIMER_AddSoftTimer(1000, softTimerCallback);
-	TIMER_StartSoftTimer(timerID);
+	TIMER_StartSoftTimer(timerID); // start the timer
 
 	LED_Init(LED0); // Add an LED
 	LED_Init(LED1); // Add an LED
@@ -61,18 +61,20 @@ int main(void) {
 	LED_Init(LED5); // Add nonexising LED for test
 	LED_ChangeState(LED5, LED_ON);
 
-	KEYS_Init(); // initialize matrix keyboard
+	KEYS_Init(); // Initialize matrix keyboard
 
-  uint8_t buf[255];
-  uint8_t len;
+  uint8_t buf[255]; // buffer for receiving commands from PC
+  uint8_t len;      // length of command
 
+  // test another way of measuring time delays
   uint32_t softTimer = TIMER_GetTime(); // get start time for delay
 
-  ONEWIRE_Init();
-  DS18B20_Init();
+  ONEWIRE_Init(); // initialize ONEWIRE bus
+  DS18B20_Init(); // initialize DS18B20 on the bus
 
 	while (1) {
 
+	  // test delay method
 	  if (TIMER_DelayTimer(1000, softTimer)) {
 	    LED_Toggle(LED3);
 	    softTimer = TIMER_GetTime(); // get start time for delay
@@ -95,18 +97,16 @@ int main(void) {
 		KEYS_Update(); // run keyboard
 	}
 }
+
 /**
  * @brief Callback function called on every soft timer overflow
  */
 void softTimerCallback(void) {
 
-//  uint32_t count = TIMER14_GetCount();
-//
-//  println("Timer14: %u", count);
-
   static uint8_t counter;
   double temp;
 
+  // get temperature every 2 seconds
   switch (counter % 2) {
   case 0:
     DS18B20_ConversionStart();
@@ -121,7 +121,6 @@ void softTimerCallback(void) {
 
   counter++;
 
-  LED_Toggle(LED0); // Toggle LED
-  //printf("Test string sent from STM32F4!!!\r\n"); // Print test string
+  LED_Toggle(LED1); // Toggle LED
 
 }

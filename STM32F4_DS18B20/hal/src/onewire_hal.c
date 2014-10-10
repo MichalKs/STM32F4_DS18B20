@@ -1,6 +1,6 @@
 /**
  * @file: 	onewire_hal.c
- * @brief:	   
+ * @brief:	ONEWIRE low level functions
  * @date: 	9 paź 2014
  * @author: Michal Ksiezopolski
  * 
@@ -23,7 +23,9 @@
 #define ONEWIRE_PORT  GPIOC
 #define ONEWIRE_CLK   RCC_AHB1Periph_GPIOC
 
-
+/**
+ * @brief Initialize ONEWIRE hardware
+ */
 void ONEWIRE_HAL_Init(void) {
 
   RCC_AHB1PeriphClockCmd(ONEWIRE_CLK, ENABLE);
@@ -42,16 +44,25 @@ void ONEWIRE_HAL_Init(void) {
 
 }
 
-
+/**
+ * @brief Release the bus. Resistor will pull it up.
+ */
 void ONEWIRE_HAL_ReleaseBus(void) {
 
   GPIO_SetBits(ONEWIRE_PORT, ONEWIRE_PIN);
 }
 
+/**
+ * @brief Pull bus low.
+ */
 void ONEWIRE_HAL_BusLow(void) {
   GPIO_ResetBits(ONEWIRE_PORT, ONEWIRE_PIN);
 }
 
+/**
+ * @brief Read the bus
+ * @return Read bus state (high or low)
+ */
 uint8_t ONEWIRE_HAL_ReadBus(void) {
   return GPIO_ReadInputDataBit(ONEWIRE_PORT, ONEWIRE_PIN);
 }
