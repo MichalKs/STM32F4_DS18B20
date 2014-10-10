@@ -18,7 +18,13 @@
 #ifndef ONEWIRE_C_
 #define ONEWIRE_C_
 
-void ONEWIRE_ResetBus(void);
-void ONEWIRE_Init(void);
+#include <inttypes.h>
+
+uint8_t    ONEWIRE_ResetBus(void);
+uint8_t ONEWIRE_ReadByte(void);
+void    ONEWIRE_WriteByte(uint8_t data);
+void    ONEWIRE_Init(void);
+uint8_t ONEWIRE_ReadROM(uint8_t* buf);
+void ONEWIRE_MatchROM(uint8_t* rom);
 
 #endif /* ONEWIRE_C_ */

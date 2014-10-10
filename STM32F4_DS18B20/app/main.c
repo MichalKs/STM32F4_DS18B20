@@ -25,6 +25,7 @@
 #include <comm.h>
 #include <keys.h>
 #include <onewire.h>
+#include <ds18b20.h>
 
 #define SYSTICK_FREQ 1000 ///< Frequency of the SysTick set at 1kHz.
 #define COMM_BAUD_RATE 115200UL ///< Baud rate for communication with PC
@@ -68,38 +69,7 @@ int main(void) {
   uint32_t softTimer = TIMER_GetTime(); // get start time for delay
 
   ONEWIRE_Init();
-  ONEWIRE_ResetBus();
-  ONEWIRE_WriteByte(0x33); // read ROM
-  uint8_t rom[8];
-
-  for (int i = 0; i < 8; i++) {
-    rom[i] = ONEWIRE_ReadByte();
-    printf("0x%02x ", rom[i]);
-  }
-  printf("\r\n");
-
-  TIMER_DelayUS(1000);
-  ONEWIRE_ResetBus();
-  ONEWIRE_WriteByte(0x55); // match ROM
-  for (int i = 0; i < 8; i++) {
-    ONEWIRE_WriteByte(rom[i]);
-  }
-  ONEWIRE_WriteByte(0x44); // convert temp
-
-  TIMER_Delay(1000); // wait 1s for temperature
-  ONEWIRE_ResetBus();
-  ONEWIRE_WriteByte(0x55); // match ROM
-  for (int i = 0; i < 8; i++) {
-    ONEWIRE_WriteByte(rom[i]);
-  }
-  ONEWIRE_WriteByte(0xbe); // read scratchpad
-
-  uint8_t result[10];
-  for (int i = 0; i < 9; i++) {
-    result[i] = ONEWIRE_ReadByte();
-    printf("0x%02x ", result[i]);
-  }
-  printf("\r\n");
+  DS18B20_Init();
 
 	while (1) {
 
@@ -133,6 +103,23 @@ void softTimerCallback(void) {
 //  uint32_t count = TIMER14_GetCount();
 //
 //  println("Timer14: %u", count);
+
+  static uint8_t counter;
+  double temp;
+
+  switch (counter % 2) {
+  case 0:
+    DS18B20_ConversionStart();
+    break;
+
+  case 1:
+    temp = DS18B20_ReadTemp();
+    println("Temperature = %.2f", temp);
+    break;
+
+  }
+
+  counter++;
 
   LED_Toggle(LED0); // Toggle LED
   //printf("Test string sent from STM32F4!!!\r\n"); // Print test string

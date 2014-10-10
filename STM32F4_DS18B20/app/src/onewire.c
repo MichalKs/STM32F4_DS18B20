@@ -39,8 +39,8 @@
 
 #define ONEWIRE_MAX_DEVICES 16 ///< Maximum number of devices on the bus
 
-static uint64_t romCode[ONEWIRE_MAX_DEVICES]; ///< Romcodes of found devices.
-static uint16_t deviceCounter; ///< Number of found devices on the bus.
+//static uint64_t romCode[ONEWIRE_MAX_DEVICES]; ///< Romcodes of found devices.
+//static uint16_t deviceCounter; ///< Number of found devices on the bus.
 
 #define ONEWIRE_CMD_SEARCH_ROM    0xf0
 #define ONEWIRE_CMD_READ_ROM      0x33
@@ -61,8 +61,10 @@ void ONEWIRE_Init(void) {
 
 /**
  * @brief Reset the bus
+ * @retval 0 Devices present on bus
+ * @retval 1 No devices on bus
  */
-void ONEWIRE_ResetBus(void) {
+uint8_t ONEWIRE_ResetBus(void) {
 
   ONEWIRE_HAL_BusLow(); // pull bus low for 480us
   TIMER_DelayUS(480);
@@ -80,6 +82,8 @@ void ONEWIRE_ResetBus(void) {
   } else {
     println("Devices present on bus");
   }
+
+  return ret;
 
 }
 /**
@@ -143,6 +147,48 @@ uint8_t ONEWIRE_ReadByte(void) {
   }
 
   return ret;
+}
+
+/**
+ * @brief Reads ROM code of device on the bus
+ *
+ * @warning This command works only if there is only one device
+ * on the bus. Data collision will occur if there are more than
+ * one device.
+ *
+ * @param buf Buffer for storing ROM code
+ */
+uint8_t ONEWIRE_ReadROM(uint8_t* buf) {
+
+  uint8_t ret = ONEWIRE_ResetBus();
+
+  if (ret) {
+    return 1; // no devices on bus
+  }
+
+  ONEWIRE_WriteByte(ONEWIRE_CMD_READ_ROM); // read ROM
+
+  for (int i = 0; i < 8; i++) {
+    buf[i] = ONEWIRE_ReadByte();
+    print("0x%02x ", buf[i]);
+  }
+  println("\r\n");
+
+  return 0;
+
+}
+/**
+ * @brief Send match ROM command
+ * @param rom ROM code
+ */
+void ONEWIRE_MatchROM(uint8_t* rom) {
+
+  ONEWIRE_ResetBus();
+  ONEWIRE_WriteByte(ONEWIRE_CMD_MATCH_ROM); // match ROM
+  for (int i = 0; i < 8; i++) {
+    ONEWIRE_WriteByte(rom[i]);
+  }
+
 }
 
 
