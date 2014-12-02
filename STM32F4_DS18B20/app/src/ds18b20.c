@@ -27,7 +27,7 @@
 
 #include <stdio.h>
 
-#define DEBUG
+#define DEBUG ///< If defined, program sends all printf data to the USART
 
 #ifdef DEBUG
 #define print(str, args...) printf("DS18B20--> "str"%s",##args,"\r")
@@ -37,23 +37,26 @@
 #define println(str, args...) (void)0
 #endif
 
-#define DS18B20_CMD_CONVERT_T         0x44 ///< Convert temperature
-#define DS18B20_CMD_WRITE_SCRATCHPAD  0x4e ///<
-#define DS18B20_CMD_READ_SCRATCHPAD   0xbe ///<
-#define DS18B20_CMD_COPY_SCRATCHPAD   0x48 ///<
-#define DS18B20_CMD_RECALL_EE         0xb8 ///<
-#define DS18B20_CMD_READ_POWER        0xb4
+#define DS18B20_CMD_CONVERT_T         0x44 ///< Convert temperature command
+#define DS18B20_CMD_WRITE_SCRATCHPAD  0x4e ///< Write scratchpad command
+#define DS18B20_CMD_READ_SCRATCHPAD   0xbe ///< Read scratchpad command
+#define DS18B20_CMD_COPY_SCRATCHPAD   0x48 ///< Copy scratchpad to internal EEPROM command
+#define DS18B20_CMD_RECALL_EE         0xb8 ///< Recall configuration data from internal EEPROM command
+#define DS18B20_CMD_READ_POWER        0xb4 ///< Read power status command
 
+/**
+ * @brief Memory structure of the DS18B20
+ */
 typedef struct {
-  uint8_t tempLSB;
-  uint8_t tempMSB;
-  uint8_t thReg;
-  uint8_t tlReg;
-  uint8_t config;
-  uint8_t reserved0;
-  uint8_t reserved1;
-  uint8_t reserved2;
-  uint8_t crc;
+  uint8_t tempLSB;    ///< Temperature value - lower byte
+  uint8_t tempMSB;    ///< Temperature value - higher byte
+  uint8_t thReg;      ///< Temperature alarm - higher byte
+  uint8_t tlReg;      ///< Temperature alarm - lower byte
+  uint8_t config;     ///< Configuration byte
+  uint8_t reserved0;  ///< Reserved
+  uint8_t reserved1;  ///< Reserved
+  uint8_t reserved2;  ///< Reserved
+  uint8_t crc;        ///< CRC calculated from previous fields
 } __attribute((packed)) DS18B20_Memory;
 
 #define DS18B20_RESOLUTION9   (0<<5) ///< 9  bit resolution
@@ -61,14 +64,15 @@ typedef struct {
 #define DS18B20_RESOLUTION11  (2<<5) ///< 11 bit resolution
 #define DS18B20_RESOLUTION12  (3<<5) ///< 12 bit resolution (default)
 
-static uint8_t romCode[8];
+static uint8_t romCode[8]; ///< Device ROMCODE
 
-#define ROMCODE_DEV_ID 0x28
+#define ROMCODE_DEV_ID 0x28 ///< Device ROMCODE ID for DS18B20 family
 
 /**
- * @brief
+ * @brief Initialize DS18B20 digital thermometer.
  *
- * @return
+ * @retval 1 No DS18B20 on bus
+ * @retval 0 Initialization went OK.
  */
 uint8_t DS18B20_Init(void) {
 
@@ -82,7 +86,9 @@ uint8_t DS18B20_Init(void) {
   return 0;
 
 }
-
+/**
+ * @brief Send start temperature conversion command.
+ */
 void DS18B20_ConversionStart(void) {
 
   ONEWIRE_MatchROM(romCode);
@@ -90,7 +96,12 @@ void DS18B20_ConversionStart(void) {
   ONEWIRE_WriteByte(DS18B20_CMD_CONVERT_T); // convert temp
 
 }
-
+/**
+ * @brief Write scratchpad commands
+ * @param th High byte of temperature alarm value
+ * @param tl Low byte of temperature alarm value
+ * @param conf Configuration byte
+ */
 void DS18B20_WriteScratchPad(uint8_t th, uint8_t tl, uint8_t conf) {
 
   ONEWIRE_MatchROM(romCode);
@@ -104,14 +115,20 @@ void DS18B20_WriteScratchPad(uint8_t th, uint8_t tl, uint8_t conf) {
   ONEWIRE_WriteByte(conf);
 
 }
-
+/**
+ * @brief Copies scratchpad into DS18B20 EEPROM.
+ * Configuration will be restored after powerdown.
+ */
 void DS18B20_CopyScratchPad(void) {
 
   ONEWIRE_MatchROM(romCode);
   ONEWIRE_WriteByte(DS18B20_CMD_COPY_SCRATCHPAD);
 
 }
-
+/**
+ * @brief Reads DS18B20 scratchpad.
+ * @param buf Buffer for scratchpad
+ */
 void DS18B20_ReadScratchPad(uint8_t* buf) {
 
   ONEWIRE_MatchROM(romCode);
@@ -124,9 +141,9 @@ void DS18B20_ReadScratchPad(uint8_t* buf) {
 
 }
 /**
- * @brief
+ * @brief Reads DS18B20 temperature.
  *
- * @return
+ * @return Temperature value in degrees Celsius
  */
 double DS18B20_ReadTemp(void) {
 
